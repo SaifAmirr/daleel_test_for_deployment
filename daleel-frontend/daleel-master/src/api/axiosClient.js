@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
+  baseURL: 'http://daleel-test-for-deployment.vercel.app',
   headers: {
     'Content-Type': 'application/json',
   },

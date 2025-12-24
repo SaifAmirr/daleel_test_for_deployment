@@ -5,8 +5,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid', unique: true, name: 'supabase_uid' })
-  supabaseUid: string;
+  @Column({ type: 'uuid', unique: true, name: 'supabase_uid', nullable: true })
+  supabaseUid: string | null;
 
   @Column({ type: 'varchar', unique: true })
   email: string;

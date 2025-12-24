@@ -19,10 +19,9 @@ export class UserRepository extends IUserRepository {
     findById(id: string): Promise<User | null> {
         return this.userRepo.findOne({ where: { id } });
     }
-
-    create(user: User): Promise<User> {
-        const newUser = this.userRepo.create(user);
-        return this.userRepo.save(newUser);
+    
+    create(user: User): User {
+        return this.userRepo.create(user);
     }
 
 }

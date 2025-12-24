@@ -1,0 +1,22 @@
+{
+  "family": "daleel-backend-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "__EXECUTION_ROLE_ARN__",
+  "taskRoleArn": "__TASK_ROLE_ARN__",
+  "containerDefinitions": [
+    {
+      "name": "daleel-backend",
+      "image": "__BACKEND_IMAGE__",
+      "portMappings": [
+        { "containerPort": 3001, "protocol": "tcp" }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" }
+      ]
+    }
+  ]
+}

@@ -73,13 +73,11 @@ function Signup() {
       // Success handling
       console.log('Signup successful:', response.data);
       
-      // Store the access token from the session
-      if (response.data.session && response.data.session.access_token) {
-        localStorage.setItem('access_token', response.data.session.access_token);
-      } else if (response.data.access_token) {
-        localStorage.setItem('access_token', response.data.access_token);
-      } else if (response.data.token) {
-        localStorage.setItem('access_token', response.data.token);
+      // For now, just use email as session identifier (local dev)
+      // In production, the backend should return a JWT or session token
+      if (response.data.user && response.data.user.email) {
+        localStorage.setItem('user_email', response.data.user.email);
+        localStorage.setItem('user_id', response.data.user.id);
       }
       
       setSignupSuccess('Account created successfully. Redirecting to login...');

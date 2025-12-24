@@ -5,13 +5,11 @@ import { AuthenticationService } from './application/services/authentication-ser
 import { UserController } from './presentation/user-controller';
 import { IUserRepository } from './domain/repositories/IUserRepository';
 import { UserRepository } from './infrastructure/repositories/user-repository';
-import { SupabaseModule } from '../supabase/supabase.module';
 import { GetUserDetailsUsecase } from './application/usecases/get-user-details-usecase';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    SupabaseModule
   ],
 
   providers:[

@@ -1,70 +1,90 @@
+import { SupabaseService } from "src/modules/supabase/supabase.service";
 import { RegisterUserDTO } from "../dtos/register-user-dto";
 import { IUserRepository } from "../../domain/repositories/IUserRepository";
 import { LoginUserDTO } from "../dtos/login-user-dto";
 import { Injectable } from "@nestjs/common";
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthenticationService {
 
     constructor(
+        private readonly supabaseService: SupabaseService,
         private readonly userRepository: IUserRepository
     ) {}
 
     async register(registerDTO: RegisterUserDTO){
+        const supabase = this.supabaseService.getClient();
         console.log('Registering user:', registerDTO);
+        const { data, error } = await supabase.auth.signUp({
+            email: registerDTO.email,
+            password: registerDTO.password,
+        });
+        if (error) {
+            throw new Error(`Registration failed: ${error.message}`);
+        }
+        
+        const user = data.user;
+        if (!user) {
+            throw new Error('User registration failed: No user data returned');
+        }
         
         const newUser = this.userRepository.create({
-            id: uuidv4(),
+            id: user.id,
             email: registerDTO.email,
             fullName: registerDTO.fullName,
             nationalId: registerDTO.nationalId,
             mobile: registerDTO.mobile,
-            dateOfBirth: this.extractDateOfBirthFromNationalId(registerDTO.nationalId),
-            supabaseUid: null,
+            dateOfBirth: new Date(this.extractDateOfBirthFromNationalId(registerDTO.nationalId)),
+            supabaseUid: user.id,
             createdAt: new Date(),
             updatedAt: new Date(),
             isSubscribed: false,
-        });
-        const saved = await this.userRepository.save(newUser);
+        })
+        await this.userRepository.save(await newUser);
 
         return {
             message: 'User registered successfully',
-            user: saved,
+            user: newUser,
         };
     }
 
     async login(loginDTO: LoginUserDTO){
-        // For local dev, just return user data if email exists
-        // In production, use proper JWT or session-based auth
-        return {
-            message: 'Login successful',
+        const supabase = this.supabaseService.getClient();
+        const { data, error } = await supabase.auth.signInWithPassword({
             email: loginDTO.email,
-        };
+            password: loginDTO.password,
+        });
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        return data;
         
     }
     
-    extractDateOfBirthFromNationalId(nationalId: string): Date {
+    extractDateOfBirthFromNationalId(nationalId: string): string {
         if (!/^\d{14}$/.test(nationalId)) {
             throw new Error('Invalid Egyptian National ID format.');
         }
 
-        const centuryCode = nationalId[0];
-        const year = parseInt(nationalId.substring(1, 3), 10);
-        const month = parseInt(nationalId.substring(3, 5), 10);
-        const day = parseInt(nationalId.substring(5, 7), 10);
+        const centuryCode: string = nationalId[0];
+        const year: string = nationalId.substring(1, 3);
+        const month: string = nationalId.substring(3, 5);
+        const day: string = nationalId.substring(5, 7);
 
-        let fullYear: number;
+        let centuryPrefix: string;
         if (centuryCode === '2') {
-            fullYear = 1900 + year;
+            centuryPrefix = '19';
         } else if (centuryCode === '3') {
-            fullYear = 2000 + year;
+            centuryPrefix = '20';
         } else {
             throw new Error('Invalid century code in national ID.');
         }
 
-        // Create date directly (month is 0-indexed in Date constructor)
-        return new Date(fullYear, month - 1, day);
-    }
+        const fullYear: string = `${centuryPrefix}${year}`;
+
+        return `${day}-${month}-${fullYear}`;
+        }
 
 }

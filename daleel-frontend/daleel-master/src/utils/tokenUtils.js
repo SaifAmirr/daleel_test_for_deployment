@@ -16,13 +16,8 @@ export const decodeToken = (token) => {
   }
 };
 
-// Get user ID from stored token or localStorage
+// Get user ID from stored token
 export const getUserIdFromToken = () => {
-  // First check if user_id is directly stored (from local dev signup)
-  const storedUserId = localStorage.getItem('user_id');
-  if (storedUserId) return storedUserId;
-
-  // Fallback to token-based lookup
   const token = localStorage.getItem('access_token');
   if (!token) return null;
   
